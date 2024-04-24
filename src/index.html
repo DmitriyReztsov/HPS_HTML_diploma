@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HPS Login</title>
+    <link href="./bootstrap-5.2.3-dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  </head>
+  <body style="margin-left: 30px;margin-right: 30px;margin-top: 10px;margin-bottom: 10px;
+  padding-left: 10px;padding-right: 10px;padding-top: 5px;padding-bottom: 5px;">
+    <div class="container">
+      <form id="login_form" class="form1" method="post" enctype="application/x-www-form-urlencoded">
+        <fieldset class="mb-3" >
+          <label for="exampleInputEmail1" class="form-label">Username</label>
+          <input name="username" type="username" class="form-control" id="exampleInputUsername" aria-describedby="usernameHelp">
+          <div id="emailHelp" class="form-text">Мы никогда никому не передадим вашу электронную почту.</div>
+        </fieldset>
+        <fieldset class="mb-3">
+          <label for="exampleInputPassword1" class="form-label">Password</label>
+          <input name="password" type="password" class="form-control" id="exampleInputPassword1">
+        </fieldset>
+        <div>
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </div>
+      </form>
+    </div>
+
+    <script type="text/javascript">
+      document.querySelector('.form1').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const response = await fetch('http://localhost:8001/token', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+        sessionStorage.setItem(result.token_type, result.access_token)
+        window.location.replace('http://127.0.0.1:8080/enterprises');
+      });
+    </script>
+  </body>
+</html>
+
