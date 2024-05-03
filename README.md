@@ -2,4 +2,4 @@
 
 to start http server perform https://www.npmjs.com/package/http-server
 
-```http-server [path to index.html]
+```http-server ./src/```
