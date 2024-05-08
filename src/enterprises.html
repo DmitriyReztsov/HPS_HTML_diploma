@@ -48,7 +48,7 @@
       // get bearer token from session storage
       const bearer = sessionStorage.getItem("bearer")
       // отправляет запрос и получаем ответ
-      const response = await fetch("http://localhost:8001/enterprise/enterprises/", {
+      const response = await fetch("http://localhost:8001/enterprise/enterprises/short/", {
         method: "GET",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${bearer}` }
       });

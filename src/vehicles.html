@@ -36,16 +36,20 @@
     <form name="vehicleForm" class="row g-3" style="margin-left: 30px;margin-right: 30px;margin-top: 10px;margin-bottom: 10px;
     padding-left: 10px;padding-right: 10px;padding-top: 5px;padding-bottom: 5px;">
         <div class="col-md-4">
-          <label for="inputBrandmodel" class="form-label">brandmodel_id</label>
-          <input type="number" class="form-control" id="inputBrandmodel">
+            <label for="inputBrandmodel" class="form-label">Brand and Model</label>
+            <select class="form-select mb-4" id="inputBrandmodel">
+                <option selected>Откройте это меню выбора</option>
+            </select>
         </div>
         <div class="col-md-4">
             <label for="inputCost" class="form-label">cost</label>
             <input type="number" class="form-control" id="inputCost">
         </div>
         <div class="col-md-4">
-            <label for="inputEnterpriseId" class="form-label">enterprise_id</label>
-            <input type="text" class="form-control" id="inputEnterpriseId">
+            <label for="inputEnterpriseId" class="form-label">Enterprise</label>
+            <select class="form-select mb-4" id="inputEnterpriseId">
+                <option selected>Откройте это меню выбора</option>
+              </select>
         </div>
         <div class="col-md-4">
             <label for="inputManufacturedYear" class="form-label">manufactured_year</label>
@@ -67,23 +71,11 @@
             <label for="inputDescription" class="form-label">description</label>
             <textarea class="form-control" id="inputDescription" rows="3"></textarea>
         </div>
-
-        <!-- <div class="col-md-4">
-          <label for="inputState" class="form-label">State</label>
-          <select id="inputState" class="form-select">
-            <option selected>Choose...</option>
-            <option>...</option>
-          </select>
-        </div> -->
-
         <div class="col-md-4 form-check form-switch">
-            <!-- <div class="form-check form-switch"> -->
-                <!-- <input type="hidden" name="checkbox" value="no" />   name="checkbox" value="yes" -->
-                <input class="form-check-input" type="checkbox" id="isInWork" checked>
-                <label class="form-check-label" for="isInWork">
-                is_in_work
-                </label>
-        <!-- </div> -->
+            <input class="form-check-input" type="checkbox" id="isInWork" checked>
+            <label class="form-check-label" for="isInWork">
+            is_in_work
+            </label>
         </div>
         <div class="col-12 d-flex justify-content-between">
             <button type="submit" id="submitButton" class="btn btn-primary">Create or Update</button>
@@ -96,13 +88,13 @@
         <thead>
             <tr>
                 <th>Id</th>
-                <th>brandmodel_id</th>
+                <th>brandmodel</th>
                 <th>description</th>
                 <th>melieage</th>
                 <th>cost</th>
                 <th>is_in_work</th>
                 <th>manufactured_year</th>
-                <th>enterprise_id</th>
+                <th>enterprise</th>
                 <th>created_at</th>
             </tr>
         </thead>
@@ -116,6 +108,43 @@
         const bearer = sessionStorage.getItem("bearer");
         const domainUrl = "http://localhost:8001";
         const defaultQueryParams = "?page=0&size=100"
+
+        // get brands and models for select
+        async function getBrandModels() {
+            const response = await fetch(domainUrl + "/vehicle_model/vehicle_models/brandmodel/", {
+                method: "GET",
+                headers: { "Accept": "application/json", "Authorization": `Bearer ${bearer}` }
+            });
+            if (response.ok === true) {
+                const responseData = await response.json();
+                var select = document.getElementById("inputBrandmodel");
+                for(index in responseData) {
+                    brandModel = responseData[index]
+                    brandModelId = brandModel["id"];
+                    brandModelText = `${brandModel.brand_name} ${brandModel.exact_model_name}`;
+                    select.options[select.options.length] = new Option(brandModelText, brandModelId);
+                }
+            }
+        }
+
+        // get enterprises for select
+        async function getEnterprises() {
+            const response = await fetch(domainUrl + "/enterprise/enterprises/short/", {
+                method: "GET",
+                headers: { "Accept": "application/json", "Authorization": `Bearer ${bearer}` }
+            });
+            if (response.ok === true) {
+                const responseData = await response.json();
+                var select = document.getElementById("inputEnterpriseId");
+                for(index in responseData) {
+                    enterprise = responseData[index];
+                    enterpriseId = enterprise["id"];
+                    enterpriseText = `${enterprise.company_name}`;
+                    select.options[select.options.length] = new Option(enterpriseText, enterpriseId);
+                }
+            }
+        }
+
         // Получение всех пользователей
         async function getVehicles() {
             // отправляет запрос и получаем ответ
@@ -160,8 +189,8 @@
             manufactured_year,
             description,
             mileage,
+            enterprise_id,
             is_in_work,
-            enterprise_id = null,
         ) {
             const requestBody = {
                 brandmodel_id: parseInt(brandmodel_id),
@@ -249,7 +278,7 @@
             tr.append(idTd);
 
             const brandmodelTd = document.createElement("td");
-            brandmodelTd.append(vehicle.brandmodel_id);
+            brandmodelTd.append(`${vehicle.brandmodel.brand.brand_name} ${vehicle.brandmodel.exact_model_name}`);
             tr.append(brandmodelTd);
 
             const descriptionTd = document.createElement("td");
@@ -273,7 +302,7 @@
             tr.append(manufacturedTd);
 
             const enterpriseTd = document.createElement("td");
-            enterpriseTd.append(vehicle.enterprise_id === null ? "" : vehicle.enterprise_id);
+            enterpriseTd.append(vehicle.enterprise_id === null ? "" : vehicle.enterprise.company_name);
             tr.append(enterpriseTd);
 
             const createdAtTd = document.createElement("td");
@@ -355,6 +384,8 @@
         });
 
         // загрузка пользователей
+        getBrandModels();
+        getEnterprises();
         getVehicles();
     </script>
 </body>
