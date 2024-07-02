@@ -35,28 +35,32 @@
 
     <form name="vehicleForm" class="row g-3" style="margin-left: 30px;margin-right: 30px;margin-top: 10px;margin-bottom: 10px;
     padding-left: 10px;padding-right: 10px;padding-top: 5px;padding-bottom: 5px;">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label for="inputBrandmodel" class="form-label">Brand and Model</label>
             <select class="form-select mb-4" id="inputBrandmodel">
                 <option selected>Откройте это меню выбора</option>
             </select>
         </div>
-        <div class="col-md-4">
-            <label for="inputCost" class="form-label">cost</label>
+        <div class="col-md-3">
+            <label for="inputCost" class="form-label">Cost</label>
             <input type="number" class="form-control" id="inputCost">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <label for="inputPurchDate" class="form-label">Purchasing Date and Time</label>
+            <input type="datetime-local" class="form-control" id="inputPurchDate">
+        </div>
+        <div class="col-md-3">
             <label for="inputEnterpriseId" class="form-label">Enterprise</label>
             <select class="form-select mb-4" id="inputEnterpriseId">
                 <option selected>Откройте это меню выбора</option>
               </select>
         </div>
         <div class="col-md-4">
-            <label for="inputManufacturedYear" class="form-label">manufactured_year</label>
+            <label for="inputManufacturedYear" class="form-label">Manufactured year</label>
             <input type="number" class="form-control" id="inputManufacturedYear">
         </div>
         <div class="col-md-4">
-              <label for="inputMileage" class="form-label">mileage</label>
+              <label for="inputMileage" class="form-label">Mileage</label>
               <input type="number" class="form-control" id="inputMileage">
         </div>
         <div class="col-md-2">
@@ -68,7 +72,7 @@
             <input class="form-control" id="readCreatedAt" type="text" placeholder="Created at wil be here..." readonly>
         </div>
         <div class="mb-3">
-            <label for="inputDescription" class="form-label">description</label>
+            <label for="inputDescription" class="form-label">Description</label>
             <textarea class="form-control" id="inputDescription" rows="3"></textarea>
         </div>
         <div class="col-md-4 form-check form-switch">
@@ -95,7 +99,7 @@
                 <th>is_in_work</th>
                 <th>manufactured_year</th>
                 <th>enterprise</th>
-                <th>created_at</th>
+                <th>purchase_datetime</th>
             </tr>
         </thead>
         <tbody>
@@ -108,6 +112,41 @@
         const bearer = sessionStorage.getItem("bearer");
         const domainUrl = "http://localhost:8001";
         const defaultQueryParams = "?page=0&size=100"
+
+
+        // parse date and time from form to UTC
+        const getUTCDateTime = (native_date) => {
+            const client_offset = new Date(native_date).getTimezoneOffset();
+            var offset_sign = "Z";
+            var newDate;
+
+            if (client_offset != 0) {
+                offset_sign = client_offset < 0 ? "+" : "-";
+                const hours = Math.floor(Math.abs(client_offset) / 60);
+                const hoursTempl = String(hours).padStart(2, "0");
+                const minutes = Math.floor(Math.abs(client_offset) % 60);
+                const minutesTempl = String(minutes).padStart(2, "0");
+
+                newDate = new Date(`${native_date}${offset_sign}${hoursTempl}:${minutesTempl}`);
+            }
+            else {
+                newDate = new Date(`${native_date}${offset_sign}`);
+            }
+
+            return newDate.toISOString();
+        }
+
+
+        // parse datetime for form in local time
+        const parseDateTimeForm = (purchaseDatetime) => {
+            const localDatiTime = new Date(purchaseDatetime);
+
+            if (!purchaseDatetime) {
+                return null;
+            }
+            return `${localDatiTime.getFullYear()}-${String(localDatiTime.getMonth()).padStart(2, "0")}-${String(localDatiTime.getDay()).padStart(2, "0")} ${String(localDatiTime.getHours()).padStart(2, "0")}:${String(localDatiTime.getMinutes()).padStart(2, "0")}`;
+
+        }
 
         // get brands and models for select
         async function getBrandModels() {
@@ -174,6 +213,7 @@
                 vehicleForm.elements["readID"].value = vehicle.id;
                 vehicleForm.elements["inputBrandmodel"].value = vehicle.brandmodel_id;
                 vehicleForm.elements["inputCost"].value = vehicle.cost;
+                vehicleForm.elements["inputPurchDate"].value = parseDateTimeForm(vehicle.purchase_datetime);
                 vehicleForm.elements["inputManufacturedYear"].value = vehicle.manufactured_year;
                 vehicleForm.elements["isInWork"].checked = (vehicle.is_in_work === true ? true : false);
                 vehicleForm.elements["inputDescription"].value = vehicle.description;
@@ -191,6 +231,7 @@
             mileage,
             enterprise_id,
             is_in_work,
+            purchase_datetime,
         ) {
             const requestBody = {
                 brandmodel_id: parseInt(brandmodel_id),
@@ -199,7 +240,8 @@
                 manufactured_year: parseInt(manufactured_year),
                 mileage: parseInt(mileage),
                 is_in_work: Boolean(is_in_work),
-                enterprise_id: parseInt(enterprise_id)
+                enterprise_id: parseInt(enterprise_id),
+                purchase_datetime: purchase_datetime,
             };
             const response = await fetch(domainUrl + "/vehicle/vehicles/", {
                 method: "POST",
@@ -225,7 +267,8 @@
             description = null,
             mileage = null,
             enterprise_id = null,
-            is_in_work = null
+            is_in_work = null,
+            purchase_datetime = null,
         ) {
             const response = await fetch(domainUrl + "/vehicle/vehicles/" + id  + defaultQueryParams, {
                 method: "PATCH",
@@ -235,13 +278,14 @@
                     "Authorization": `Bearer ${bearer}`
                 },
                 body: JSON.stringify({
-                    brandmodel_id: brandmodel_id,
+                    brandmodel_id: parseInt(brandmodel_id),
                     description: description,
-                    cost: cost,
-                    manufactured_year: manufactured_year,
-                    mileage: mileage,
+                    cost: parseInt(cost),
+                    manufactured_year: parseInt(manufactured_year),
+                    mileage: parseInt(mileage),
                     is_in_work: Boolean(is_in_work),
-                    enterprise_id: enterprise_id
+                    enterprise_id: parseInt(enterprise_id),
+                    purchase_datetime: purchase_datetime,
                 })
             });
             if (response.ok === true) {
@@ -250,7 +294,7 @@
                 document.querySelector("tr[data-rowid='" + vehicle.id + "']").replaceWith(row(vehicle));
             }
         }
-        // Удаление пользователя
+        // Удаление vehicle
         async function deleteVehicle(id) {
             const response = await fetch(domainUrl + "/vehicle/vehicles/" + id  + defaultQueryParams, {
                 method: "DELETE",
@@ -305,9 +349,9 @@
             enterpriseTd.append(vehicle.enterprise_id === null ? "" : vehicle.enterprise.company_name);
             tr.append(enterpriseTd);
 
-            const createdAtTd = document.createElement("td");
-            createdAtTd.append(vehicle.created_at);
-            tr.append(createdAtTd);
+            const purchasedAtTd = document.createElement("td");
+            purchasedAtTd.append(vehicle.purchase_datetime === null ? "" : new Date(vehicle.purchase_datetime));
+            tr.append(purchasedAtTd);
                
             const linksTd = document.createElement("td");
 
@@ -315,7 +359,7 @@
             editLink.setAttribute("data-id", vehicle.id);
             editLink.setAttribute("type", "submit");
             editLink.setAttribute("class", "btn btn-primary");
-            editLink.setAttribute("style", "margin-right: 5px;");
+            editLink.setAttribute("style", "margin: 2px;");
             editLink.append("Update");
             editLink.addEventListener("click", async e => {
  
@@ -328,7 +372,7 @@
             removeLink.setAttribute("data-id", vehicle.id);
             removeLink.setAttribute("type", "submit");
             removeLink.setAttribute("class", "btn btn-danger");
-            removeLink.setAttribute("style", "margin-left: 5px;");
+            removeLink.setAttribute("style", "margin: 2px;");
             removeLink.append("Delete");
             removeLink.addEventListener("click", async e => {
    
@@ -362,6 +406,8 @@
             const description = vehicleForm.elements["inputDescription"].value;
             const enterprise_id = vehicleForm.elements["inputEnterpriseId"].value;
             const mileage = vehicleForm.elements["inputMileage"].value;
+            const purchase_datetime = getUTCDateTime(vehicleForm.elements["inputPurchDate"].value);
+
             if (vehicleId === 0) createVehicle(
                 brandmodel_id,
                 cost,
@@ -369,7 +415,8 @@
                 description,
                 mileage,
                 enterprise_id,
-                is_in_work
+                is_in_work,
+                purchase_datetime,
             );
             else editVehicle(
                 vehicleId,
@@ -379,7 +426,8 @@
                 description,
                 mileage,
                 enterprise_id,
-                is_in_work
+                is_in_work,
+                purchase_datetime,
             );
         });
 
