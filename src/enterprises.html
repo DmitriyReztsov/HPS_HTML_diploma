@@ -36,6 +36,8 @@
         <tr>
           <th scope="col">Id</th>
           <th scope="col">Enterprise</th>
+          <th scope="col">Vehicles</th>
+          <th scope="col">Reports</th>
         </tr>
       </thead>
       <tbody>
@@ -75,6 +77,13 @@
         const nameTd = document.createElement("td");
         nameTd.append(enterprise.company_name);
         tr.append(nameTd);
+
+        const Vehicles = document.createElement("td")
+        const linkVehicels = document.createElement("a");
+        linkVehicels.setAttribute("href", `/vehicles?enterprise=${enterprise.id}`);
+        linkVehicels.textContent = "Vehicles";
+        Vehicles.appendChild(linkVehicels);
+        tr.append(Vehicles);
 
         return tr;
     }

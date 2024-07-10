@@ -111,7 +111,7 @@
         const vehicleForm = document.forms["vehicleForm"];    // форма ввода
         const bearer = sessionStorage.getItem("bearer");
         const domainUrl = "http://localhost:8001";
-        const defaultQueryParams = "?page=0&size=100"
+        var defaultQueryParams = "?page=0&size=100"
 
 
         // parse date and time from form to UTC
@@ -187,6 +187,10 @@
         // Получение всех пользователей
         async function getVehicles() {
             // отправляет запрос и получаем ответ
+            const enterpriseId = params.enterprise;
+            if (enterpriseId) {
+                defaultQueryParams += `&enterprise_id=${enterpriseId}`;
+            }
             const response = await fetch(domainUrl + "/vehicle/vehicles/" + defaultQueryParams, {
                 method: "GET",
                 headers: { "Accept": "application/json", "Authorization": `Bearer ${bearer}` }
@@ -322,7 +326,10 @@
             tr.append(idTd);
 
             const brandmodelTd = document.createElement("td");
-            brandmodelTd.append(`${vehicle.brandmodel.brand.brand_name} ${vehicle.brandmodel.exact_model_name}`);
+            const linkBrandmodelTd = document.createElement("a");
+            linkBrandmodelTd.setAttribute("href", `/trips?vehicle_id=${vehicle.id}`);
+            linkBrandmodelTd.textContent = `${vehicle.brandmodel.brand.brand_name} ${vehicle.brandmodel.exact_model_name}`;
+            brandmodelTd.appendChild(linkBrandmodelTd);
             tr.append(brandmodelTd);
 
             const descriptionTd = document.createElement("td");
@@ -429,6 +436,10 @@
                 is_in_work,
                 purchase_datetime,
             );
+        });
+
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
         });
 
         // загрузка пользователей
