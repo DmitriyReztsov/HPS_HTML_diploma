@@ -85,6 +85,13 @@
         Vehicles.appendChild(linkVehicels);
         tr.append(Vehicles);
 
+        const Reports = document.createElement("td")
+        const linkReports = document.createElement("a");
+        linkReports.setAttribute("href", `/reports?enterprise=${enterprise.id}`);
+        linkReports.textContent = "Reports";
+        Reports.appendChild(linkReports);
+        tr.append(Reports);
+
         return tr;
     }
 

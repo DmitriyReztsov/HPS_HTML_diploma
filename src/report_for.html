@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HPS Reports</title>
+    <link href="./bootstrap-5.2.3-dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="body">
+
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/enterprises">Enterprises</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/vehicles">Vehicles</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Drivers</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <h2 id="report_id_title"></h2>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Period</th>
+                <th>Mileage</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <script>
+        const bearer = sessionStorage.getItem("bearer");
+        const domainUrl = "http://localhost:8001";
+        var defaultQueryParams = "?q="
+
+        async function getReport() {
+            const reportId = params.report_id;
+            const response = await fetch(domainUrl + `/report/reports/${reportId}/`, {
+                method: "GET",
+                headers: { "Accept": "application/json", "Authorization": `Bearer ${bearer}` }
+            });
+            if (response.ok === true) {
+                const report = await response.json();
+                document.getElementById("report_id_title").innerHTML = `Report ID ${report.id} ${report.title}`;
+                const reportData = report.report_result;
+                console.log(">>> RESULT <<<", reportData)
+                const rows = document.querySelector("tbody");
+                for (var period in reportData) {
+                    rows.append(row(period, reportData[period]));
+                };
+            }
+        }
+
+        // создание строки для таблицы
+        function row(period, mileage) {
+   
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", period);
+   
+            const periodTd = document.createElement("td");
+            periodTd.append(period);
+            tr.append(periodTd);
+
+            const mileageTd = document.createElement("td");
+            mileageTd.append(mileage);
+            tr.append(mileageTd);
+
+            return tr;
+        }
+
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+
+        getReport();
+    </script>
+</body>
+</html>
