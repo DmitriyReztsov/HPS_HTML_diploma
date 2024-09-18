@@ -1,0 +1,11 @@
+version: "1.0"
+services:
+  frontend-html:
+    container_name: frontend-html
+    image: frontend-image
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"

@@ -30,12 +30,12 @@
       document.querySelector('.form1').addEventListener('submit', async function (event) {
         event.preventDefault();
         const formData = new FormData(this);
-        const response = await fetch('http://localhost:8001/token', {
+        const response = await fetch('http://localhost:5000/token', {
           method: 'POST',
           body: formData,
         });
         const result = await response.json();
-        sessionStorage.setItem(result.token_type, result.access_token)
+        localStorage.setItem(result.token_type, result.access_token)
         window.location.replace('http://127.0.0.1:8080/enterprises');
       });
     </script>
