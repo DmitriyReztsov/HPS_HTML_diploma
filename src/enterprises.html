@@ -45,12 +45,13 @@
   </table>
 
   <script>
+    const bearer = sessionStorage.getItem("bearer");
+    // const domainUrl = "http://localhost:5000";
+    const domainUrl = "http://api.humanintellect.ru";
     // Получение всех компаний
     async function getEnterprises() {
-      // get bearer token from session storage
-      const bearer = localStorage.getItem("bearer")
       // отправляет запрос и получаем ответ
-      const response = await fetch("http://localhost:5000/enterprise/enterprises/short/", {
+      const response = await fetch(domainUrl + "/enterprise/enterprises/short/", {
         method: "GET",
         headers: { "Accept": "application/json", "Authorization": `Bearer ${bearer}` }
       });

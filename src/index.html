@@ -36,7 +36,7 @@
           body: formData,
         });
         const result = await response.json();
-        localStorage.setItem(result.token_type, result.access_token)
+        sessionStorage.setItem(result.token_type, result.access_token)
         // window.location.replace('http://frontend-html:8080/enterprises');
         window.location.replace('http://humanintellect.ru/enterprises');
       });
