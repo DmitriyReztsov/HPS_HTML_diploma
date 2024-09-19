@@ -30,13 +30,15 @@
       document.querySelector('.form1').addEventListener('submit', async function (event) {
         event.preventDefault();
         const formData = new FormData(this);
-        const response = await fetch('http://backend-fasapi:5000/token', {
+        // const response = await fetch('http://backend-fasapi:5000/token', {
+          const response = await fetch('http://api.humanintellect.ru/token', {
           method: 'POST',
           body: formData,
         });
         const result = await response.json();
         localStorage.setItem(result.token_type, result.access_token)
-        window.location.replace('http://frontend-html:8080/enterprises');
+        // window.location.replace('http://frontend-html:8080/enterprises');
+        window.location.replace('http://humanintellect.ru/enterprises');
       });
     </script>
   </body>
