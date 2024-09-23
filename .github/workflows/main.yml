@@ -1,0 +1,24 @@
+name: HPS_HTML_frontend
+
+on: 
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+    - name: executing remote ssh commands to deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+        script: |
+          cd /home/diploma/HPS_HTML_diploma/
+          git pull
+          docker image rm -f frontend-image:latest
+          docker compose --project-name hps_fapi_diploma up -d
