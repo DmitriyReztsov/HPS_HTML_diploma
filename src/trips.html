@@ -66,15 +66,20 @@
     </table>
     
     <script>
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        document.getElementById("vehicle_id_title").innerHTML = `Trips for Vehicle ID ${params.vehicle_id}`;
+
         const tripFilterForm = document.forms["tripFilterForm"];    // форма ввода
         const bearer = sessionStorage.getItem("bearer");
         // const domainUrl = "http://localhost:5000";
         const domainUrl = "http://api.humanintellect.ru";
         var fromDateFilter = null;
         var toDateFilter = null;
+        const vehicleId = params.vehicle_id;
 
         async function getTrips (fromDateTime = null, toDateTime = null) {
-            const vehicleId = params.vehicle_id;
             var defaultQueryParams = `?vehicle_id=${vehicleId}`;
             if (fromDateTime && toDateTime) {
                 defaultQueryParams += `&from_date=${fromDateTime}&till_date=${toDateTime}`;
@@ -125,43 +130,22 @@
                
             const linksTd = document.createElement("td");
 
-            const mapLink = document.createElement("button");
-            mapLink.setAttribute("data-id", trip.id);
-            mapLink.setAttribute("type", "submit");
-            mapLink.setAttribute("class", "btn btn-primary");
-            mapLink.setAttribute("style", "margin: 2px;");
-            mapLink.append("Show trip track");
-            mapLink.addEventListener("click", async e => {
- 
-                e.preventDefault();
-                await getRouteMap([trip.id]);
-            });
-            linksTd.append(mapLink);
+            const mapLinkBtn = document.createElement("button");
+            const linkMapLinkBtn = document.createElement("a");
+            linkMapLinkBtn.setAttribute("href", `/map_route?vehicle_id=${vehicleId}&trip_id=${trip.id}`);
+            linkMapLinkBtn.textContent = "Show trip track";
+            mapLinkBtn.appendChild(linkMapLinkBtn);
+            linksTd.append(mapLinkBtn)
             tr.appendChild(linksTd);
    
             return tr;
         }
 
         async function getRouteMap(tripIds) {
-          const requestBody = {
-                trip_ids: tripIds
-            };
-          const vehicleId = params.vehicle_id;
-          const response = await fetch(domainUrl + "/trip/get_map_for_trip/" + vehicleId, {
-                method: "POST",
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${bearer}`,
-                    // "Access-Control-Allow-Origin": "*",
-
-                },
-                body: JSON.stringify(requestBody)
-            });
-            if (response.ok === true) {
-              // window.location.replace('http://127.0.0.1:8080/map_route');
-              window.location.replace('http://humanintellect.ru/map_route');
-            }
+          let params = "";
+          tripIds.forEach((element) => params += `&trip_id=${element}`)
+          window.location.href=`/map_route?vehicle_id=${vehicleId}${params}`;
+            // }
         }
 
         const clean_table = () => {
@@ -192,12 +176,6 @@
           }
           getRouteMap(ids);
         });
-
-        const params = new Proxy(new URLSearchParams(window.location.search), {
-            get: (searchParams, prop) => searchParams.get(prop),
-        });
-
-        document.getElementById("vehicle_id_title").innerHTML = `Trips for Vehicle ID ${params.vehicle_id}`;
 
         getTrips();
     </script>
